@@ -1,0 +1,6 @@
+framework module Pods_EchoTwin {
+  umbrella header "Pods-EchoTwin-umbrella.h"
+
+  export *
+  module * { export * }
+}

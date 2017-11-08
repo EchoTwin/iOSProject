@@ -1,0 +1,6 @@
+framework module Pods_EchoTwinTests {
+  umbrella header "Pods-EchoTwinTests-umbrella.h"
+
+  export *
+  module * { export * }
+}
