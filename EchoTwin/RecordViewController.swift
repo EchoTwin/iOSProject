@@ -10,14 +10,27 @@
 import AVFoundation
 import UIKit
 
-class RecordViewController: UIViewController,  AVAudioRecorderDelegate {
+class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
     @IBOutlet weak var recordButton: UIButton!
-    var recordingSession: AVAudioSession!
-    var audioRecorder: AVAudioRecorder!
+    private var recordingSession: AVAudioSession!
+    @IBOutlet weak var playButton: UIButton!
+    private var audioRecorder: AVAudioRecorder!
+    private var audioPlayer: AVAudioPlayer?
+    @IBOutlet weak var uploadButton: UIButton!
+    @IBOutlet weak var recordingTimerLabel: UILabel!
+    @IBOutlet weak var playingTimerLabel: UILabel!
+    @IBOutlet weak var usernameTextField: UITextField!
+    @IBOutlet weak var usernamePictureButton: UIButton!
+    
+    var timer:Timer = Timer()
+    var seconds = 0;
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        recordButton.layer.cornerRadius = recordButton.bounds.size.width * 0.5;
+        playButton.layer.cornerRadius = playButton.bounds.size.width * 0.5;
+        setDoneOnKeyboard(textField:usernameTextField)
         recordingSession = AVAudioSession.sharedInstance()
         do {
             try recordingSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
@@ -38,16 +51,36 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate {
         // Do any additional setup after loading the view, typically from a nib.
     }
     
-    @IBAction func recordTapped(_ sender: UIButton) {
+    @IBAction func recordButton_TouchUpInside(_ sender: UIButton) {
         if audioRecorder == nil {
             startRecording()
         } else {
             finishRecording(success: true)
         }
     }
+    @IBAction func playButton_TouchUpInside(_ sender: UIButton) {
+        if (!sender.isSelected){
+            startPlaying()
+        }
+        else{
+            stopPlaying()
+        }
+        sender.isSelected = !sender.isSelected
+    }
+    
+    @IBAction func userPictureButton_TouchUpInside(_ sender: UIButton) {
+        let imagePickerController = UIImagePickerController()
+        imagePickerController.sourceType = .photoLibrary
+        imagePickerController.delegate = self
+        self.present(imagePickerController, animated: true, completion: nil)
+    }
+    
+    fileprivate func getAudioFileUrl() -> URL {
+        return getDocumentsDirectory().appendingPathComponent("recording.m4a")
+    }
     
     func startRecording() {
-        let audioFilename = getDocumentsDirectory().appendingPathComponent("recording.m4a")
+        let audioFilename = getAudioFileUrl()
         
         let settings = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
@@ -61,7 +94,8 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate {
             audioRecorder.delegate = self
             audioRecorder.record()
             
-            recordButton.setTitle("Tap to Stop", for: .normal)
+            recordButton.isSelected = true;
+            runRecordingTimer()
         } catch {
             finishRecording(success: false)
         }
@@ -71,12 +105,36 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate {
         audioRecorder.stop()
         audioRecorder = nil
         
-        if success {
-            recordButton.setTitle("Tap to Re-record", for: .normal)
-        } else {
-            recordButton.setTitle("Tap to Record", for: .normal)
-            // recording failed :(
-        }
+        stopTimer()
+        recordButton.isSelected = false;
+        playButton.isEnabled = success;
+        uploadButton.isEnabled = success;
+    }
+    
+    func startPlaying(){
+        let audioFilename = getAudioFileUrl()
+        
+        try! AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback)
+        try! AVAudioSession.sharedInstance().setActive(true)
+        
+        try! audioPlayer = AVAudioPlayer(contentsOf: audioFilename)
+        audioPlayer!.delegate = self
+        audioPlayer!.prepareToPlay()
+        audioPlayer!.play();
+        runPlayingTimer()
+    }
+    
+    func stopPlaying(){
+        resetTimer(timerLabel: playingTimerLabel)
+        stopTimer()
+        audioPlayer!.stop();
+    }
+    
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool)
+    {
+        resetTimer(timerLabel: playingTimerLabel)
+        stopTimer()
+        playButton.isSelected = false;
     }
     
     func getDocumentsDirectory() -> URL {
@@ -90,5 +148,74 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate {
             finishRecording(success: false)
         }
     }
+    
+    func runRecordingTimer()
+    {
+        runTimer(timerLabel: recordingTimerLabel, selector: #selector(self.updateRecordingTimer))
+    }
+    
+    func runPlayingTimer()
+    {
+        runTimer(timerLabel: playingTimerLabel, selector: #selector(self.updatePlayingTimer))
+    }
+    
+    func runTimer(timerLabel:UILabel, selector aSelector: Selector) {
+        resetTimer(timerLabel: timerLabel)
+        timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: aSelector, userInfo: nil, repeats: true)
+    }
+    
+    func stopTimer(){
+        timer.invalidate()
+    }
+    
+    func timeString(time:TimeInterval) -> String {
+        let minutes:Int = Int(time) / 60 % 60
+        let seconds:Int = Int(time) % 60
+        return String(format:"%02i:%02i", minutes, seconds)
+    }
+    
+    @objc func updateRecordingTimer() {
+        updateTimer(timerLabel: recordingTimerLabel)
+    }
+    
+    @objc func updatePlayingTimer() {
+        updateTimer(timerLabel: playingTimerLabel)
+    }
+    
+    func updateTimer(timerLabel:UILabel) {
+        seconds += 1
+        timerLabel.text = timeString(time: TimeInterval(seconds))
+    }
+    
+    func resetTimer(timerLabel:UILabel) {
+        seconds = 0
+        timerLabel.text = timeString(time: TimeInterval(seconds))
+    }
+    
+    func setDoneOnKeyboard(textField:UITextField) {
+        let keyboardToolbar = UIToolbar()
+        keyboardToolbar.sizeToFit()
+        let flexBarButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+        let doneBarButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.dismissKeyboard))
+        keyboardToolbar.items = [flexBarButton, doneBarButton]
+        textField.inputAccessoryView = keyboardToolbar
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
 }
 
+extension RecordViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
+            usernamePictureButton.imageView?.contentMode = UIViewContentMode.scaleAspectFit
+            usernamePictureButton.setImage(image, for: UIControlState.normal)
+        }
+        self.dismiss(animated: true, completion: nil)
+    }
+    
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        self.dismiss(animated: true, completion: nil)
+    }
+}

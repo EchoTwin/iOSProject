@@ -36,5 +36,7 @@
 	<string>1:846619810567:ios:a3bafa5c95d222e5</string>
 	<key>DATABASE_URL</key>
 	<string>https://echotwin-a8d76.firebaseio.com</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Test images</string>
 </dict>
 </plist>
