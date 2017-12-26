@@ -122,6 +122,9 @@
                                         <integer key="value" value="6"/>
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="uploadButton_TouchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="cxh-ZN-KBx"/>
+                                </connections>
                             </button>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="Username" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="3Re-DR-He6">
                                 <rect key="frame" x="87.5" y="212" width="200" height="30"/>

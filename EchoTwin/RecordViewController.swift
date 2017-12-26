@@ -9,6 +9,7 @@
 
 import AVFoundation
 import UIKit
+import Firebase
 
 class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioPlayerDelegate {
 
@@ -25,9 +26,11 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
     
     var timer:Timer = Timer()
     var seconds = 0;
+    var storageRef: StorageReference!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        storageRef = Storage.storage().reference()
         recordButton.layer.cornerRadius = recordButton.bounds.size.width * 0.5;
         playButton.layer.cornerRadius = playButton.bounds.size.width * 0.5;
         setDoneOnKeyboard(textField:usernameTextField)
@@ -68,6 +71,10 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         sender.isSelected = !sender.isSelected
     }
     
+    @IBAction func uploadButton_TouchUpInside(_ sender: UIButton) {
+        uploadAudioToFirebase()
+    }
+    
     @IBAction func userPictureButton_TouchUpInside(_ sender: UIButton) {
         let imagePickerController = UIImagePickerController()
         imagePickerController.sourceType = .photoLibrary
@@ -77,6 +84,17 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
     
     fileprivate func getAudioFileUrl() -> URL {
         return getDocumentsDirectory().appendingPathComponent("recording.m4a")
+    }
+    
+    func uploadAudioToFirebase(){
+        // File located on disk
+        let localFile = getAudioFileUrl()
+        
+        // Create a reference to the file you want to upload
+        let voiceRef = storageRef.child("Voices/ios.m4a")
+        
+        // Upload the file to the path "images/rivers.jpg"
+        let uploadTask = voiceRef.putFile(from: localFile)
     }
     
     func startRecording() {
