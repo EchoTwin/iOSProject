@@ -16,6 +16,7 @@
 		724DE5181FA8E5DC00960EFC /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 724DE5161FA8E5DC00960EFC /* LaunchScreen.storyboard */; };
 		724DE5231FA8E5DC00960EFC /* EchoTwinTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 724DE5221FA8E5DC00960EFC /* EchoTwinTests.swift */; };
 		724DE52E1FA8E5DC00960EFC /* EchoTwinUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 724DE52D1FA8E5DC00960EFC /* EchoTwinUITests.swift */; };
+		727368CF20172701000249F9 /* NavigationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 727368CE20172701000249F9 /* NavigationViewController.swift */; };
 		72F9304C1FF2A1BA001F3C94 /* TextToSpeechViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F9304B1FF2A1BA001F3C94 /* TextToSpeechViewController.swift */; };
 		72F9304D1FF2A1BA001F3C94 /* TextToSpeechViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F9304B1FF2A1BA001F3C94 /* TextToSpeechViewController.swift */; };
 		72F9304E1FF2A1BA001F3C94 /* TextToSpeechViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72F9304B1FF2A1BA001F3C94 /* TextToSpeechViewController.swift */; };
@@ -62,6 +63,7 @@
 		724DE5291FA8E5DC00960EFC /* EchoTwinUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EchoTwinUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		724DE52D1FA8E5DC00960EFC /* EchoTwinUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EchoTwinUITests.swift; sourceTree = "<group>"; };
 		724DE52F1FA8E5DC00960EFC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		727368CE20172701000249F9 /* NavigationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationViewController.swift; sourceTree = "<group>"; };
 		72F9304B1FF2A1BA001F3C94 /* TextToSpeechViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToSpeechViewController.swift; sourceTree = "<group>"; };
 		A92026A70E686715F78E13B2 /* Pods-EchoTwin.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-EchoTwin.release.xcconfig"; path = "Pods/Target Support Files/Pods-EchoTwin/Pods-EchoTwin.release.xcconfig"; sourceTree = "<group>"; };
 		B2487CD2467DDCCCF34CE4AE /* Pods_EchoTwin.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_EchoTwin.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -131,6 +133,7 @@
 				724DE5161FA8E5DC00960EFC /* LaunchScreen.storyboard */,
 				724DE5191FA8E5DC00960EFC /* Info.plist */,
 				72F9304B1FF2A1BA001F3C94 /* TextToSpeechViewController.swift */,
+				727368CE20172701000249F9 /* NavigationViewController.swift */,
 			);
 			path = EchoTwin;
 			sourceTree = "<group>";
@@ -489,6 +492,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				727368CF20172701000249F9 /* NavigationViewController.swift in Sources */,
 				72F9304C1FF2A1BA001F3C94 /* TextToSpeechViewController.swift in Sources */,
 				724DE5101FA8E5DC00960EFC /* RecordViewController.swift in Sources */,
 				724DE50E1FA8E5DC00960EFC /* AppDelegate.swift in Sources */,

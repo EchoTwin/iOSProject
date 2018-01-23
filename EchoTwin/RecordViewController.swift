@@ -20,7 +20,6 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
     private var audioPlayer: AVAudioPlayer?
     @IBOutlet weak var uploadButton: UIButton!
     @IBOutlet weak var recordingTimerLabel: UILabel!
-    @IBOutlet weak var playingTimerLabel: UILabel!
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var usernamePictureButton: UIButton!
     
@@ -50,8 +49,14 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         } catch {
             // failed to record!
         }
+        navigationController?.navigationBar.topItem?.title = "Back";
         
         // Do any additional setup after loading the view, typically from a nib.
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.navigationBar.topItem?.title = "EchoTwin";
     }
     
     @IBAction func recordButton_TouchUpInside(_ sender: UIButton) {
@@ -94,7 +99,7 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         let voiceRef = storageRef.child("Voices/ios.m4a")
         
         // Upload the file to the path "images/rivers.jpg"
-        let uploadTask = voiceRef.putFile(from: localFile)
+        voiceRef.putFile(from: localFile)
     }
     
     func startRecording() {
@@ -139,19 +144,14 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         audioPlayer!.delegate = self
         audioPlayer!.prepareToPlay()
         audioPlayer!.play();
-        runPlayingTimer()
     }
     
     func stopPlaying(){
-        resetTimer(timerLabel: playingTimerLabel)
-        stopTimer()
         audioPlayer!.stop();
     }
     
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool)
     {
-        resetTimer(timerLabel: playingTimerLabel)
-        stopTimer()
         playButton.isSelected = false;
     }
     
@@ -172,11 +172,6 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         runTimer(timerLabel: recordingTimerLabel, selector: #selector(self.updateRecordingTimer))
     }
     
-    func runPlayingTimer()
-    {
-        runTimer(timerLabel: playingTimerLabel, selector: #selector(self.updatePlayingTimer))
-    }
-    
     func runTimer(timerLabel:UILabel, selector aSelector: Selector) {
         resetTimer(timerLabel: timerLabel)
         timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: aSelector, userInfo: nil, repeats: true)
@@ -194,10 +189,6 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
     
     @objc func updateRecordingTimer() {
         updateTimer(timerLabel: recordingTimerLabel)
-    }
-    
-    @objc func updatePlayingTimer() {
-        updateTimer(timerLabel: playingTimerLabel)
     }
     
     func updateTimer(timerLabel:UILabel) {
