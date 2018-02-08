@@ -91,7 +91,7 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         if (usernameTextField.text?.isEmpty == false &&
             imageUrl != nil)
         {
-            let mRef = Database.database().reference()
+git             let mRef = Database.database().reference()
             let audioFile = uploadAudioToFirebase()
             let imageFile = uploadImageToFirebase()
             let username = usernameTextField.text
