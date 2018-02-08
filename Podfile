@@ -8,12 +8,16 @@ target 'EchoTwin' do
   # Pods for EchoTwin
   pod 'Firebase/Core'
   pod 'Firebase/Storage'
+  pod 'Firebase/Auth'
+  pod 'Firebase/Database'
 
   target 'EchoTwinTests' do
     inherit! :search_paths
     # Pods for testing
     pod 'Firebase/Core'
     pod 'Firebase/Storage'
+    pod 'Firebase/Auth'
+    pod 'Firebase/Database'
   end
 
   target 'EchoTwinUITests' do
@@ -21,6 +25,8 @@ target 'EchoTwin' do
     # Pods for testing
     pod 'Firebase/Core'
     pod 'Firebase/Storage'
+    pod 'Firebase/Auth'
+    pod 'Firebase/Database'
   end
 
 end

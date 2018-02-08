@@ -23,12 +23,16 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
     @IBOutlet weak var usernameTextField: UITextField!
     @IBOutlet weak var usernamePictureButton: UIButton!
     
+    let recordingSecondsLimit = 60
+    
     var timer:Timer = Timer()
-    var seconds = 0;
+    var currentRecordingSeconds = 60
     var storageRef: StorageReference!
+    var imageUrl:URL?
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        resetTimer(timerLabel: recordingTimerLabel)
         storageRef = Storage.storage().reference()
         recordButton.layer.cornerRadius = recordButton.bounds.size.width * 0.5;
         playButton.layer.cornerRadius = playButton.bounds.size.width * 0.5;
@@ -76,10 +80,6 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         sender.isSelected = !sender.isSelected
     }
     
-    @IBAction func uploadButton_TouchUpInside(_ sender: UIButton) {
-        uploadAudioToFirebase()
-    }
-    
     @IBAction func userPictureButton_TouchUpInside(_ sender: UIButton) {
         let imagePickerController = UIImagePickerController()
         imagePickerController.sourceType = .photoLibrary
@@ -87,19 +87,90 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         self.present(imagePickerController, animated: true, completion: nil)
     }
     
+    @IBAction func uploadButton_TouchUpInside(_ sender: UIButton) {
+        if (usernameTextField.text?.isEmpty == false &&
+            imageUrl != nil)
+        {
+            let mRef = Database.database().reference()
+            let audioFile = uploadAudioToFirebase()
+            let imageFile = uploadImageToFirebase()
+            let username = usernameTextField.text
+            
+            let key = mRef.childByAutoId().key
+            let voiceRecord = ["pictureFileURL":imageFile,
+                 "userName": username,
+                 "voiceFileURL": audioFile
+            ]
+            
+            mRef.child(key).setValue(voiceRecord)
+        }
+        else{
+            showMomentMessage(text: "Username and picture are required!")
+        }
+    }
+    
     fileprivate func getAudioFileUrl() -> URL {
         return getDocumentsDirectory().appendingPathComponent("recording.m4a")
     }
     
-    func uploadAudioToFirebase(){
+    func uploadAudioToFirebase() -> String{
         // File located on disk
         let localFile = getAudioFileUrl()
-        
+        let fileName = NSInteger(NSDate().timeIntervalSince1970 * 1000);
+        let saveToFile = "\(fileName).m4a"
         // Create a reference to the file you want to upload
-        let voiceRef = storageRef.child("Voices/ios.m4a")
+        let voiceRef = storageRef.child("Voices/\(saveToFile)")
+        let uploadTask = voiceRef.putFile(from: localFile, metadata: nil)
+        showLoading(uploadTask: uploadTask, fileType: "Voice")
+        return saveToFile
+    }
+    
+    func uploadImageToFirebase() -> String?{
+        // File located on disk
+        if let localFile = imageUrl{
+            let fileName = NSInteger(NSDate().timeIntervalSince1970 * 1000);
+            let saveToFile = "\(fileName).\(localFile.pathExtension)"
+            // Create a reference to the file you want to upload
+            let avatarRef = storageRef.child("Avatars/\(saveToFile)")
+            let uploadTask = avatarRef.putFile(from: localFile, metadata: nil)
+            showLoading(uploadTask: uploadTask, fileType: "Avatar")
+            return saveToFile
+        }
+        return nil
+    }
+    
+    fileprivate func showMomentMessage(text:String) {
+        let alert = UIAlertController(title: "", message: text, preferredStyle: .alert)
+        self.present(alert, animated: true)
         
-        // Upload the file to the path "images/rivers.jpg"
-        voiceRef.putFile(from: localFile)
+        let when = DispatchTime.now() + 2
+        DispatchQueue.main.asyncAfter(deadline: when){
+            // your code with delay
+            alert.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    func showLoading(uploadTask: StorageUploadTask, fileType: String){
+        var alert:UIAlertController? = nil
+        uploadTask.observe(.resume) { _ in
+            alert = UIAlertController(title: nil, message: "Please wait...", preferredStyle: .alert)
+            
+            let loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+            loadingIndicator.hidesWhenStopped = true
+            loadingIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.gray
+            loadingIndicator.startAnimating();
+            
+            alert!.view.addSubview(loadingIndicator)
+            self.present(alert!, animated: true, completion: nil)
+        }
+        uploadTask.observe(.success) { _ in
+            alert!.dismiss(animated: true, completion: nil)
+            self.showMomentMessage(text:"\(fileType) file uploaded")
+        }
+        uploadTask.observe(.failure) { _ in
+            alert!.dismiss(animated: true, completion: nil)
+            self.showMomentMessage(text:"\(fileType) upload failed")
+        }
     }
     
     func startRecording() {
@@ -130,8 +201,8 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         
         stopTimer()
         recordButton.isSelected = false;
-        playButton.isEnabled = success;
-        uploadButton.isEnabled = success;
+        playButton.isHidden = !success;
+        uploadButton.isHidden = !success;
     }
     
     func startPlaying(){
@@ -192,13 +263,16 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
     }
     
     func updateTimer(timerLabel:UILabel) {
-        seconds += 1
-        timerLabel.text = timeString(time: TimeInterval(seconds))
+        currentRecordingSeconds -= 1
+        timerLabel.text = timeString(time: TimeInterval(currentRecordingSeconds))
+        if (currentRecordingSeconds == 0){
+            finishRecording(success: true)
+        }
     }
     
     func resetTimer(timerLabel:UILabel) {
-        seconds = 0
-        timerLabel.text = timeString(time: TimeInterval(seconds))
+        currentRecordingSeconds = recordingSecondsLimit
+        timerLabel.text = timeString(time: TimeInterval(currentRecordingSeconds))
     }
     
     func setDoneOnKeyboard(textField:UITextField) {
@@ -220,6 +294,7 @@ extension RecordViewController: UIImagePickerControllerDelegate, UINavigationCon
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
             usernamePictureButton.imageView?.contentMode = UIViewContentMode.scaleAspectFit
             usernamePictureButton.setImage(image, for: UIControlState.normal)
+            imageUrl = info["UIImagePickerControllerImageURL"] as? URL
         }
         self.dismiss(animated: true, completion: nil)
     }
