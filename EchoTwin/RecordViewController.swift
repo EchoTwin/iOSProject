@@ -36,7 +36,7 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
         storageRef = Storage.storage().reference()
         recordButton.layer.cornerRadius = recordButton.bounds.size.width * 0.5;
         playButton.layer.cornerRadius = playButton.bounds.size.width * 0.5;
-        setDoneOnKeyboard(textField:usernameTextField)
+        setDoneOnKeyboard(responder:usernameTextField)
         recordingSession = AVAudioSession.sharedInstance()
         do {
             try recordingSession.setCategory(AVAudioSessionCategoryPlayAndRecord)
@@ -273,19 +273,6 @@ class RecordViewController: UIViewController,  AVAudioRecorderDelegate, AVAudioP
     func resetTimer(timerLabel:UILabel) {
         currentRecordingSeconds = recordingSecondsLimit
         timerLabel.text = timeString(time: TimeInterval(currentRecordingSeconds))
-    }
-    
-    func setDoneOnKeyboard(textField:UITextField) {
-        let keyboardToolbar = UIToolbar()
-        keyboardToolbar.sizeToFit()
-        let flexBarButton = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let doneBarButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.dismissKeyboard))
-        keyboardToolbar.items = [flexBarButton, doneBarButton]
-        textField.inputAccessoryView = keyboardToolbar
-    }
-    
-    @objc func dismissKeyboard() {
-        view.endEditing(true)
     }
 }
 
